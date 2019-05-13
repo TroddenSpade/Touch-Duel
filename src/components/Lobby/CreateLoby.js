@@ -1,0 +1,77 @@
+import React from 'react';
+import { View,Text,StyleSheet,TouchableOpacity } from 'react-native';
+import socket from '../../socketio/socket';
+
+export default class CreateLobby extends React.Component{
+    state={
+        id:false,
+        creator:false,
+        players:[],
+    }
+
+    componentWillMount(){
+        socket.on('DuelCreated',(data)=>{
+            this.setState({
+                lobbyInfo:data,
+                id:data.DuelID,
+                creator:data.username,
+            });
+            socket.off("DuelCreated");
+        });
+        socket.emit('CreateDuel');
+        socket.on("playerJoined",(player)=>{
+            this.setState(prevState =>({
+                players:[...prevState.players,player],
+            }));
+        });
+    }
+    render(){
+        return(
+        <View style={Styles.container}>
+            {this.state.id ?
+            <View style={Styles.lobbyInfo}>
+                <Text>LobbyID : {this.state.id}</Text>
+                <Text>Creator : {this.state.creator}</Text>
+            </View>
+            :
+            <Text>
+                Could'nt Create a Lobby Try Again !
+            </Text>}
+            {this.state.players.map((item,id)=>(
+                    <View key={id}>
+                        <Text>{item}</Text>
+                    </View>
+                )
+            )}
+            {this.state.players.length > 0 ?
+            <TouchableOpacity
+                onPress={()=>{
+                    socket.emit('startDuel',this.state.id);
+                    this.props.navigation.navigate("DuelField",{data:this.state.data});
+                }}
+            >
+                <Text>Start</Text>
+            </TouchableOpacity>
+            :null}
+        </View>
+        )
+    }
+    componentWillUnmount(){
+        socket.emit("deleteLobby",this.state.id);
+        socket.off('playerJoined');
+    }
+}
+
+const Styles = StyleSheet.create({
+    container:{
+        flex:1,
+        flexDirection:'column',
+        justifyContent: "center",
+        alignItems: 'center',
+    },
+    lobbyInfo:{
+        flexDirection:'column',
+        justifyContent: "center",
+        alignItems: 'center',
+    }
+})
