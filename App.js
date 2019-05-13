@@ -1,21 +1,25 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { createAppContainer,createSwitchNavigator } from 'react-navigation';
+
+import StartScreen from './src/components/StartScreen';
+import Lobby from './src/components/Lobby';
+import DuelField from './src/components/DuelField';
+
+const AppNavigator = createSwitchNavigator({
+  StartScreen: StartScreen,
+  Lobby: Lobby,
+  DuelField: DuelField,
+},{
+  initialRouteName : "StartScreen"
+});
+const AppContainer = createAppContainer(AppNavigator);
+
 
 export default class App extends React.Component {
   render() {
     return (
-      <View style={styles.container}>
-        <Text>Open up App.js to start working on your app!</Text>
-      </View>
+      <AppContainer/>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
