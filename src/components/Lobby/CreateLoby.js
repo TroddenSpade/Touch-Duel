@@ -4,18 +4,13 @@ import socket from '../../socketio/socket';
 
 export default class CreateLobby extends React.Component{
     state={
-        id:false,
-        creator:false,
+        _id:false,
         players:[],
     }
 
     componentWillMount(){
         socket.on('DuelCreated',(data)=>{
-            this.setState({
-                lobbyInfo:data,
-                id:data.DuelID,
-                creator:data.username,
-            });
+            this.setState(data);
             socket.off("DuelCreated");
         });
         socket.emit('CreateDuel');
@@ -28,10 +23,9 @@ export default class CreateLobby extends React.Component{
     render(){
         return(
         <View style={Styles.container}>
-            {this.state.id ?
+            {this.state._id ?
             <View style={Styles.lobbyInfo}>
-                <Text>LobbyID : {this.state.id}</Text>
-                <Text>Creator : {this.state.creator}</Text>
+                <Text>LobbyID : {this.state._id}</Text>
             </View>
             :
             <Text>
@@ -43,11 +37,11 @@ export default class CreateLobby extends React.Component{
                     </View>
                 )
             )}
-            {this.state.players.length > 0 ?
+            {this.state.players.length > 1 ?
             <TouchableOpacity
                 onPress={()=>{
                     socket.emit('startDuel',this.state.id);
-                    this.props.navigation.navigate("DuelField",{data:this.state.data});
+                    this.props.navigation.navigate("DuelField",{data:this.state});
                 }}
             >
                 <Text>Start</Text>
