@@ -4,12 +4,14 @@ import { createAppContainer,createSwitchNavigator } from 'react-navigation';
 
 import StartScreen from './src/components/StartScreen';
 import Lobby from './src/components/Lobby';
-import DuelField from './src/components/DuelField';
+import Field2 from './src/components/Fields/Field2';
+import Field3 from './src/components/Fields/Field3';
 
 const AppNavigator = createSwitchNavigator({
   StartScreen: StartScreen,
   Lobby: Lobby,
-  DuelField: DuelField,
+  Field2: Field2,
+  Field3: Field3,
 },{
   initialRouteName : "StartScreen"
 });
