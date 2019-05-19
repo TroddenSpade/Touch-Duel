@@ -4,37 +4,34 @@ import socket from '../../socketio/socket';
 
 export default class Lobby extends React.Component{
     state={
-        id:false,
-        creator:false,
+        _id:false,
         players:[],
+        header:false,
     }
 
     componentWillMount(){
         const lobby = this.props.navigation.getParam('id');
         socket.emit('joinLobby',lobby);
         socket.on("lobbyInfo",(data)=>{
-            this.setState({
-                lobbyInfo:data,
-                id:data._id,
-                creator:data.creator,
-                players:data.players,
-            });
+            this.setState({data});
         });
         socket.on("playerJoined",(player)=>{
             this.setState(prevState =>({
                 players:[...prevState.players,player],
             }));
         });
-        socket.on("start",()=>{
-            this.props.navigation.navigate("DuelField",{data:this.state.lobbyInfo});
+        socket.on("START",()=>{
+            this.props.navigation.navigate(
+                `Field${this.state.players.length}`,
+                {data:this.state});
         });
     }
     render(){
         return(
         <View style={Styles.container}>
-            {this.state.id ?
+            {this.state._id ?
             <View style={Styles.lobbyInfo}>
-                <Text>LobbyID : {this.state.id}</Text>
+                <Text>LobbyID : {this.state._id}</Text>
                 <Text>players :</Text>
             </View>
             :

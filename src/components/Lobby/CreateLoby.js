@@ -6,6 +6,7 @@ export default class CreateLobby extends React.Component{
     state={
         _id:false,
         players:[],
+        header:true,
     }
 
     componentWillMount(){
@@ -40,8 +41,10 @@ export default class CreateLobby extends React.Component{
             {this.state.players.length > 1 ?
             <TouchableOpacity
                 onPress={()=>{
-                    socket.emit('startDuel',this.state.id);
-                    this.props.navigation.navigate("DuelField",{data:this.state});
+                    socket.emit('START_DUEL',this.state.id);
+                    this.props.navigation.navigate(
+                        `Field${this.state.players.length}`,
+                        {data:this.state});
                 }}
             >
                 <Text>Start</Text>
