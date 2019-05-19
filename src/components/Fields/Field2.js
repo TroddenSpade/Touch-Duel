@@ -1,8 +1,8 @@
 import React from 'react';
 import { View,Text,StyleSheet,TouchableWithoutFeedback } from 'react-native';
-import { soundObject } from '../../assets/sounds/rev';
+import { soundObject } from '../../../assets/sounds/rev';
 
-import socket from '../socketio/socket';
+import socket from '../../socketio/socket';
 
 export default class DuelField extends React.Component{
     initialState={
@@ -14,18 +14,12 @@ export default class DuelField extends React.Component{
     
     constructor(props){
         super(props);
-        this.state = {
-            ...this.initialState,
-            round: 0,
-        }
+        const data = this.props.navigation.getParam('data');
+        this.state = data;
     }
 
     componentWillMount(){
-        const data = this.props.navigation.getParam('data');
-        this.setState({
-            data:data,
-        })
-        socket.on('dead',(id)=>{
+        socket.on('DEAD',(id)=>{
             if(id == socket.id){ 
                 this.setState({
                     opponent:false
@@ -36,11 +30,18 @@ export default class DuelField extends React.Component{
                 });
             }
         });
-        socket.on('missed',()=>{
+        socket.on('MISSED',()=>{
             alert('a player missed');
         })
-        this.timer(0,data);
-        this.forceRound(0);
+        socket.on('START_ROUND',()=>{
+            this.startRound();
+        });
+        socket.on('FINISH',()=>{
+            setTimeout(()=>{
+                this.props.navigation.navigate('StartScreen');
+            },2000);
+        })
+        this.startRound();
     }
 
     render(){
@@ -76,18 +77,26 @@ export default class DuelField extends React.Component{
     }
 
     componentDidUpdate(){
-        if(this.roundFinished()){
+        if(this.state.header && this.finished()){
             setTimeout(()=>{
-                this.nextRound();
+                socket.emit('HEADER_SAYS_MATCH_IS_FINISHED',this.state._id);
             },3000);
+        }else if(this.state.header && !this.finished()){
+            if(this.roundFinished()){
+                setTimeout(()=>{
+                    socket.emit('HEADER_SAYS_START_ROUND',this.state._id);
+                },3000);
+            }
         }
     }
 
     componentWillUnmount(){
-        socket.off('dead');
-        socket.off('missed');
+        socket.off('DEAD');
+        socket.off('MISSED');
+        socket.off('START_ROUND');
+        socket.off('NEXT_ROUND');
+        socket.off('FINISH');
     }
-
 
     roundFinished =()=>{
         if(this.state.alive && this.state.opponent){
@@ -103,33 +112,22 @@ export default class DuelField extends React.Component{
         return false;
     }
 
-    timer =(i,data)=>{
+    startRound =()=>{
+        const currentRound = this.state.round;
+        this.setState({
+            round: currentRound + 1,
+            ...this.initialState,
+        })
+        this.forceRound(currentRound +1);
         setTimeout(()=>{
-            this.setState({
-                lock:false,
-            })
-        },data.times[i])
-    }
-
-    nextRound =()=>{
-        if(this.finished()){
-            setTimeout(()=>{
-                this.props.navigation.navigate('StartScreen');
-            },2000);
-        }else{
-            this.setState(prevState => ({
-                round: prevState.round + 1,
-                ...this.initialState,
-            }))
-            this.timer(this.state.round,this.state.data);
-            this.forceRound(this.state.round);
-        }
+            this.setState({lock:false})
+        },this.state.times[currentRound]);
     }
 
     forceRound =(round)=>{
         setTimeout(()=>{
             if(round == this.state.round){
-                this.nextRound();
+                socket.emit('HEADER_SAYS_START_ROUND',this.state._id);
             }
         },15000);
     }
@@ -138,12 +136,12 @@ export default class DuelField extends React.Component{
         if(this.state.bullet>0){
             soundObject.replayAsync()
             if(this.state.lock){
-                socket.emit('missed',this.state.data._id);
+                socket.emit('MISSED',this.state._id);
                 this.setState({
                     bullet:0,
                 })
             }else{
-                socket.emit('shoot',this.state.data._id);
+                socket.emit('SHOOT',this.state._id);
                 this.setState({
                     bullet:0,
                 })
