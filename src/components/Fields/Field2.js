@@ -11,7 +11,7 @@ export default class DuelField extends React.Component{
         alive:true,
         lock:true,
     }
-    
+
     constructor(props){
         super(props);
         const data = this.props.navigation.getParam('data');
@@ -22,16 +22,17 @@ export default class DuelField extends React.Component{
         socket.on('DEAD',(id)=>{
             if(id == socket.id){ 
                 this.setState({
-                    opponent:false
+                    alive:false,
+                    lock:true
                 });
             }else{
                 this.setState({
-                    alive:false,
+                    opponent:false,
                 });
             }
         });
         socket.on('MISSED',()=>{
-            alert('a player missed');
+            // alert('a player missed');
         })
         socket.on('START_ROUND',()=>{
             this.startRound();
@@ -39,7 +40,7 @@ export default class DuelField extends React.Component{
         socket.on('FINISH',()=>{
             setTimeout(()=>{
                 this.props.navigation.navigate('StartScreen');
-            },2000);
+            },3000);
         })
         this.startRound();
     }
@@ -78,9 +79,7 @@ export default class DuelField extends React.Component{
 
     componentDidUpdate(){
         if(this.state.header && this.finished()){
-            setTimeout(()=>{
-                socket.emit('HEADER_SAYS_MATCH_IS_FINISHED',this.state._id);
-            },3000);
+            socket.emit('HEADER_SAYS_MATCH_IS_FINISHED',this.state._id);
         }else if(this.state.header && !this.finished()){
             if(this.roundFinished()){
                 setTimeout(()=>{
@@ -141,7 +140,11 @@ export default class DuelField extends React.Component{
                     bullet:0,
                 })
             }else{
-                socket.emit('SHOOT',this.state._id);
+                socket.emit('SHOOT',
+                {
+                    id:this.state._id,
+                    dead:this.state.players[0]
+                });
                 this.setState({
                     bullet:0,
                 })
@@ -154,7 +157,6 @@ const Styles = StyleSheet.create({
     container:{
         flex:1,
         flexDirection:'column',
-        justifyContent: "center",
         alignItems: 'center',
         justifyContent:'space-around'
     },
