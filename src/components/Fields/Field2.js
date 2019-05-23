@@ -1,5 +1,10 @@
 import React from 'react';
-import { View,Text,StyleSheet,TouchableWithoutFeedback } from 'react-native';
+import { 
+    View,
+    Text,
+    Image,
+    StyleSheet,
+    TouchableWithoutFeedback } from 'react-native';
 import { soundObject } from '../../../assets/sounds/rev';
 
 import socket from '../../socketio/socket';
@@ -22,12 +27,12 @@ export default class DuelField extends React.Component{
         socket.on('DEAD',(id)=>{
             if(id == socket.id){ 
                 this.setState({
-                    alive:false,
-                    lock:true
+                    opponent:false,
                 });
             }else{
                 this.setState({
-                    opponent:false,
+                    alive:false,
+                    lock:true
                 });
             }
         });
@@ -54,23 +59,41 @@ export default class DuelField extends React.Component{
                 <View style={Styles.container}>
                     <View>
                         {this.state.opponent ? 
-                        <Text>alive</Text>
+                        <Image
+                            style={{width: 50, height: 50, transform:[{ rotate: '180deg'}] }}
+                            source={require('../../../assets/picture/hg1.png')}
+                        />
                         :
-                        <Text>Dead</Text>}
+                        <Image
+                            style={{width: 50, height: 50, transform:[{ rotate: '180deg'}] }}
+                            source={require('../../../assets/picture/hd1.png')}
+                        />}
                     </View>
                     {this.state.lock ?
-                    <Text>
-                        Duel Field !
-                    </Text>
+                    <View>
+                        <Image
+                            style={{height: 100}}
+                            source={require('../../../assets/picture/duelfield.png')}
+                        />
+                    </View>
                     :
-                    <Text>
-                        Fire !
-                    </Text>}
+                    <View>
+                        <Image
+                            style={{height: 100}}
+                            source={require('../../../assets/picture/fire.png')}
+                        />
+                    </View>}
                     <View>
                         {this.state.alive ? 
-                        <Text>alive</Text>
+                        <Image
+                            style={{width: 50, height: 50}}
+                            source={require('../../../assets/picture/hg2.png')}
+                        />
                         :
-                        <Text>Dead</Text>}
+                        <Image
+                            style={{width: 50, height: 50}}
+                            source={require('../../../assets/picture/hd2.png')}
+                        />}
                     </View>
                 </View>
             </TouchableWithoutFeedback>
@@ -143,7 +166,7 @@ export default class DuelField extends React.Component{
                 socket.emit('SHOOT',
                 {
                     id:this.state._id,
-                    dead:this.state.players[0]
+                    dead:socket.id
                 });
                 this.setState({
                     bullet:0,

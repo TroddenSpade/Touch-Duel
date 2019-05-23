@@ -1,5 +1,10 @@
 import React from 'react';
-import { View,Text,StyleSheet,TouchableWithoutFeedback } from 'react-native';
+import { 
+    View,
+    Text,
+    Image,
+    StyleSheet,
+    TouchableWithoutFeedback } from 'react-native';
 import { soundObject } from '../../../assets/sounds/rev';
 
 import socket from '../../socketio/socket';
@@ -7,7 +12,8 @@ import socket from '../../socketio/socket';
 export default class DuelField extends React.Component{
     initialState={
         bullet:2,
-        opponentStatus:[true,true],
+        playersStatus:[true,true],
+        playersPointer:[150,-150,0],
         alive:true,
         lock:true,
         poniter:null,
@@ -21,23 +27,37 @@ export default class DuelField extends React.Component{
             if(data.players[player] != socket.id)
                 players.push(data.players[player]);
         }
+        players.push(socket.id);
         data.players = players;
         this.state = data;
     }
 
     componentWillMount(){
+        socket.on('POINTING',(data)=>{
+            const from = this.state.players.indexOf(data.from);
+            const to = this.state.players.indexOf(data.to);
+            var newPointer = this.state.playersPointer.slice(0);
+            if(to - from == 2 || to-from+3 == 2){
+                newPointer[from] = this.initialState.playersPointer[from] + 30;
+            }else{
+                newPointer[from] = this.initialState.playersPointer[from] - 30;
+            }
+            this.setState({
+                playersPointer: newPointer,
+            })
+        })
         socket.on('DEAD',(id)=>{
-            if(id == socket.id){ 
+            if(id == socket.id){
                 this.setState({
                     alive:false,
                     lock: true,
                 });
             }else{
                 const index = this.state.players.indexOf(id);
-                var newStatus = this.state.opponentStatus.slice(0);
+                var newStatus = this.state.playersStatus.slice(0);
                 newStatus[index] = false;
                 this.setState({
-                    opponentStatus: newStatus,
+                    playersStatus: newStatus,
                 })
             }
         });
@@ -56,7 +76,6 @@ export default class DuelField extends React.Component{
     }
 
     render(){
-        console.log(this.state)
         return(
             <TouchableWithoutFeedback 
             onPress={this.fire.bind(this)}
@@ -67,45 +86,81 @@ export default class DuelField extends React.Component{
                         <TouchableWithoutFeedback
                             onPress={()=>this.pointTo(0)}
                         >
-                            {this.state.opponentStatus[0] ?
-                            <Text
-                                style={this.state.poniter == 0 ? {color:'green'}:{}}
-                            >
-                                alive
-                            </Text>
+                            {this.state.playersStatus[0] ?
+                            <Image
+                                style={[
+                                    Styles.playerImg,
+                                    {transform:[{ rotate: `${this.state.playersPointer[0]}deg`}]},
+                                    this.state.poniter == 0 ? Styles.chosen:{}
+                                ]}
+                                source={require('../../../assets/picture/hg1.png')}
+                            />
                             :
-                            <Text>Dead</Text>}
+                            <Image
+                                style={[
+                                    Styles.playerImg,
+                                    {transform:[{ rotate: `${this.state.playersPointer[0]}deg`}]},
+                                ]}
+                                source={require('../../../assets/picture/hd1.png')}
+                            />}
                         </TouchableWithoutFeedback>
                         <TouchableWithoutFeedback
                             onPress={()=>this.pointTo(1)}
                         >
-                            {this.state.opponentStatus[1] ?
-                            <Text
-                                style={this.state.poniter == 1 ? {color:'green'}:{}}
-                            >
-                                alive
-                            </Text>
+                            {this.state.playersStatus[1] ?
+                            <Image
+                                style={[
+                                    Styles.playerImg,
+                                    {transform:[{ rotate: `${this.state.playersPointer[1]}deg`}]},
+                                    this.state.poniter == 1 ? Styles.chosen:{}
+                                ]}
+                                source={require('../../../assets/picture/hg2.png')}
+                            />
                             :
-                            <Text>Dead</Text>}
+                            <Image
+                                style={[
+                                    Styles.playerImg,
+                                    {transform:[{ rotate: `${this.state.playersPointer[1]}deg`}]},
+                                ]}
+                                source={require('../../../assets/picture/hd2.png')}
+                            />}
                         </TouchableWithoutFeedback>
                     </View>
 
                     <View style={Styles.bottom}>
                         <View>
                             {this.state.lock ?
-                            <Text>
-                                Duel Field !
-                            </Text>
+                            <View>
+                                <Image
+                                    style={{height: 100}}
+                                    source={require('../../../assets/picture/duelfield.png')}
+                                />
+                            </View>
                             :
-                            <Text>
-                                Fire !
-                            </Text>}
+                            <View>
+                                <Image
+                                    style={{height: 100}}
+                                    source={require('../../../assets/picture/fire.png')}
+                                />
+                            </View>}
                         </View>
                         <View style={Styles.player}>
                             {this.state.alive ? 
-                            <Text>alive</Text>
+                            <Image
+                                style={[
+                                    Styles.playerImg,
+                                    {transform:[{ rotate: `${this.state.playersPointer[2]}deg`}]}
+                                ]}
+                                source={require('../../../assets/picture/hg3.png')}
+                            />
                             :
-                            <Text>Dead</Text>}
+                            <Image
+                                style={[
+                                    Styles.playerImg,
+                                    {transform:[{ rotate: `${this.state.playersPointer[2]}deg`}]},
+                                ]}
+                                source={require('../../../assets/picture/hd3.png')}
+                            />}
                         </View>
                     </View>
 
@@ -127,6 +182,7 @@ export default class DuelField extends React.Component{
     }
 
     componentWillUnmount(){
+        socket.off('POINTING');
         socket.off('DEAD');
         socket.off('MISSED');
         socket.off('START_ROUND');
@@ -135,6 +191,11 @@ export default class DuelField extends React.Component{
     }
 
     pointTo =(i)=>{
+        socket.emit('POINT_TO',{
+            id:this.state._id,
+            from:socket.id,
+            to:this.state.players[i],
+        })
         this.setState({
             poniter: i,
         })
@@ -142,8 +203,8 @@ export default class DuelField extends React.Component{
 
     roundFinished =()=>{
         if( this.state.alive +
-            this.state.opponentStatus[0] +
-            this.state.opponentStatus[1] < 2){
+            this.state.playersStatus[0] +
+            this.state.playersStatus[1] < 2){
             return true;
         }
         return false;
@@ -227,5 +288,15 @@ const Styles = StyleSheet.create({
     player:{
         flex:1,
         justifyContent:'center'
+    },
+    playerImg:{
+        width: 50,
+        height: 50,
+    },
+    chosen:{
+        borderWidth:2,
+        borderRadius:10,
+        borderColor: 'green',
     }
+    
 })
