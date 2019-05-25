@@ -4,10 +4,14 @@ import {
     Text,
     Image,
     StyleSheet,
+    Dimensions,
     TouchableWithoutFeedback } from 'react-native';
-import { soundObject } from '../../../assets/sounds/rev';
+import { soundObject } from '../../rev';
 
 import socket from '../../socketio/socket';
+
+const dimensions = Dimensions.get('window');
+const ScreenWidth = dimensions.width;
 
 export default class DuelField extends React.Component{
     initialState={
@@ -133,14 +137,16 @@ export default class DuelField extends React.Component{
                         {this.state.lock ?
                         <View>
                             <Image
-                                style={{height: 100}}
+                                style={{width: ScreenWidth*3/10}}
+                                resizeMode={'contain'}
                                 source={require('../../../assets/picture/duelfield.png')}
                             />
                         </View>
                         :
                         <View>
                             <Image
-                                style={{height: 100}}
+                                style={{width: ScreenWidth*3/10}}
+                                resizeMode={'contain'}
                                 source={require('../../../assets/picture/fire.png')}
                             />
                         </View>}
