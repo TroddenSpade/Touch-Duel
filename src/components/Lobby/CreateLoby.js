@@ -19,6 +19,11 @@ export default class CreateLobby extends React.Component{
             this.setState(prevState =>({
                 players:[...prevState.players,player],
             }));
+        }); 
+        socket.on('START',()=>{
+            this.props.navigation.navigate(
+                `Field${this.state.players.length}`,
+                {data:this.state});
         });
     }
     render(){
@@ -41,10 +46,7 @@ export default class CreateLobby extends React.Component{
             {this.state.players.length > 1 ?
             <TouchableOpacity
                 onPress={()=>{
-                    socket.emit('START_DUEL',this.state.id);
-                    this.props.navigation.navigate(
-                        `Field${this.state.players.length}`,
-                        {data:this.state});
+                    socket.emit('HEADER_SAYS_START_DUEL',this.state._id);
                 }}
             >
                 <Text>Start</Text>
