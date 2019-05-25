@@ -13,7 +13,7 @@ export default class Lobby extends React.Component{
         const lobby = this.props.navigation.getParam('id');
         socket.emit('joinLobby',lobby);
         socket.on("lobbyInfo",(data)=>{
-            this.setState({data});
+            this.setState(data);
         });
         socket.on("playerJoined",(player)=>{
             this.setState(prevState =>({
@@ -21,6 +21,7 @@ export default class Lobby extends React.Component{
             }));
         });
         socket.on("START",()=>{
+            console.log('START');
             this.props.navigation.navigate(
                 `Field${this.state.players.length}`,
                 {data:this.state});
