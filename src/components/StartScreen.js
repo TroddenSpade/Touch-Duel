@@ -1,7 +1,5 @@
 import React from 'react';
-import { View,Text,TouchableOpacity,StyleSheet } from 'react-native';
-
-import socket from '../socketio/socket';
+import { View,Text,TouchableOpacity,StyleSheet,Image } from 'react-native';
 
 export default class StartScreen extends React.Component{
     componentDidMount(){
@@ -9,7 +7,11 @@ export default class StartScreen extends React.Component{
     render(){
         return(
             <View style={Styles.container}>
-            <Text>Touch Duel</Text>
+            <Image
+                style={{width: 200}}
+                resizeMode={'contain'}
+                source={require('../../assets/icon.png')}
+            />
             <TouchableOpacity
             style={Styles.startButton}
             onPress={()=>
@@ -29,6 +31,7 @@ const Styles = StyleSheet.create({
         flexDirection:'column',
         justifyContent: 'space-around',
         alignItems: 'center',
+        backgroundColor:'white'
     },
     startButton:{
         height: 60,
