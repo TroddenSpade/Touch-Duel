@@ -71,6 +71,9 @@ export default class DuelField extends React.Component{
         socket.on('START_ROUND',()=>{
             this.startRound();
         });
+        socket.on('NEXT_ROUND',()=>{
+            this.startRound();
+        });
         socket.on('FINISH',()=>{
             setTimeout(()=>{
                 this.props.navigation.navigate('StartScreen');
@@ -270,7 +273,8 @@ const Styles = StyleSheet.create({
         flex:1,
         flexDirection:'column',
         alignItems: 'center',
-        justifyContent:'flex-start'
+        justifyContent:'flex-start',
+        backgroundColor:'white'
     },
     lobbyInfo:{
         flexDirection:'column',
