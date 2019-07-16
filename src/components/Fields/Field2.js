@@ -50,9 +50,7 @@ export default class DuelField extends React.Component{
             this.startRound();
         });
         socket.on('FINISH',()=>{
-            setTimeout(()=>{
-                this.props.navigation.navigate('StartScreen');
-            },3000);
+            this.props.navigation.navigate('StartScreen');
         })
         this.startRound();
     }
@@ -64,6 +62,7 @@ export default class DuelField extends React.Component{
             style={Styles.container}
             >
                 <View style={Styles.container}>
+                    <View><Text>Round {this.state.round}</Text></View>
                     <View>
                         {this.state.opponent ? 
                         <Image
@@ -110,14 +109,14 @@ export default class DuelField extends React.Component{
     }
 
     componentDidUpdate(){
-        if(this.state.header && this.finished()){
-            socket.emit('HEADER_SAYS_MATCH_IS_FINISHED',this.state._id);
-        }else if(this.state.header && !this.finished()){
-            if(this.roundFinished()){
-                setTimeout(()=>{
-                    socket.emit('HEADER_SAYS_START_ROUND',this.state._id);
-                },3000);
-            }
+        if(this.state.header && this.roundFinished() && this.finished()){
+            setTimeout(()=>{
+                socket.emit('HEADER_SAYS_MATCH_IS_FINISHED',this.state._id);
+            },3000);
+        }else if(this.state.header && this.roundFinished()){
+            setTimeout(()=>{
+                socket.emit('HEADER_SAYS_START_ROUND',this.state._id);
+            },3000);
         }
     }
 
@@ -164,7 +163,7 @@ export default class DuelField extends React.Component{
     }
 
     fire(){
-        if(this.state.bullet>0){
+        if(this.state.alive && this.state.bullet>0){
             soundObject.replayAsync()
             if(this.state.lock){
                 socket.emit('MISSED',this.state._id);
