@@ -89,6 +89,7 @@ export default class DuelField extends React.Component{
             style={Styles.container}
             >
                 <View style={Styles.container}>
+                    <View><Text>Round {this.state.round}</Text></View>
                     <View style={Styles.top}>
                         <TouchableWithoutFeedback
                             onPress={()=>this.pointTo(0)}
@@ -179,10 +180,12 @@ export default class DuelField extends React.Component{
     }
 
     componentDidUpdate(){
-        if(this.state.header && this.finished()){
-            socket.emit('HEADER_SAYS_MATCH_IS_FINISHED',this.state._id);
-        }else if(this.state.header && !this.finished()){
-            if(this.roundFinished()){
+        if(this.state.header && this.roundFinished()){
+            if(this.finished()){
+                setTimeout(()=>{
+                    socket.emit('HEADER_SAYS_MATCH_IS_FINISHED',this.state._id);
+                },3000);
+            }else{
                 setTimeout(()=>{
                     socket.emit('HEADER_SAYS_START_ROUND',this.state._id);
                 },3000);
@@ -241,13 +244,16 @@ export default class DuelField extends React.Component{
     forceRound =(round)=>{
         setTimeout(()=>{
             if(round == this.state.round){
-                socket.emit('HEADER_SAYS_START_ROUND',this.state._id);
+                if(round == 5)
+                    socket.emit('HEADER_SAYS_MATCH_IS_FINISHED',this.state._id);
+                else
+                    socket.emit('HEADER_SAYS_START_ROUND',this.state._id);
             }
         },15000);
     }
 
     fire(){
-        if(this.state.bullet>0 && this.state.poniter != null){
+        if(this.state.alive && this.state.bullet>0 && this.state.poniter != null){
             soundObject.replayAsync()
             if(this.state.lock){
                 socket.emit('MISSED',this.state._id);
@@ -273,7 +279,7 @@ const Styles = StyleSheet.create({
         flex:1,
         flexDirection:'column',
         alignItems: 'center',
-        justifyContent:'flex-start',
+        justifyContent:'space-around',
         backgroundColor:'white'
     },
     lobbyInfo:{
@@ -282,7 +288,7 @@ const Styles = StyleSheet.create({
         alignItems: 'center',
     },
     top:{
-        height:'50%',
+        // height:'50%',
         width:'100%',
         flexDirection:'row',
         alignItems: 'center',
