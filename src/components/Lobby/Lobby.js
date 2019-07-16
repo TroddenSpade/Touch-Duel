@@ -3,25 +3,27 @@ import { View,Text,StyleSheet,TouchableOpacity } from 'react-native';
 import socket from '../../socketio/socket';
 
 export default class Lobby extends React.Component{
-    state={
-        _id:false,
-        players:[],
-        header:false,
-    }
-
-    componentWillMount(){
-        const lobby = this.props.navigation.getParam('id');
-        socket.emit('joinLobby',lobby);
+    constructor(props){
+        super(props);
+        this.state={
+            _id:false,
+            players:[],
+            header:false,
+        }
         socket.on("lobbyInfo",(data)=>{
             this.setState(data);
         });
+    }
+    
+    componentWillMount(){
+        const lobby = this.props.navigation.getParam('id');
+        socket.emit('joinLobby',lobby);
         socket.on("playerJoined",(player)=>{
             this.setState(prevState =>({
                 players:[...prevState.players,player],
             }));
         });
         socket.on("START",()=>{
-            console.log('START');
             this.props.navigation.navigate(
                 `Field${this.state.players.length}`,
                 {data:this.state});
@@ -48,10 +50,10 @@ export default class Lobby extends React.Component{
         </View>
         )
     }
-    componentWillUnmount(){
+    componentDidUnmount(){
         socket.off('lobbyInfo');
         socket.off('playerJoinde');
-        socket.off('start');
+        socket.off('START');
     }
 }
 
