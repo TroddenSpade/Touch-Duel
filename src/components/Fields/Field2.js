@@ -109,14 +109,16 @@ export default class DuelField extends React.Component{
     }
 
     componentDidUpdate(){
-        if(this.state.header && this.roundFinished() && this.finished()){
-            setTimeout(()=>{
-                socket.emit('HEADER_SAYS_MATCH_IS_FINISHED',this.state._id);
-            },3000);
-        }else if(this.state.header && this.roundFinished()){
-            setTimeout(()=>{
-                socket.emit('HEADER_SAYS_START_ROUND',this.state._id);
-            },3000);
+        if(this.state.header && this.roundFinished()){
+            if(this.finished()){
+                setTimeout(()=>{
+                    socket.emit('HEADER_SAYS_MATCH_IS_FINISHED',this.state._id);
+                },3000);
+            }else{
+                setTimeout(()=>{
+                    socket.emit('HEADER_SAYS_START_ROUND',this.state._id);
+                },3000);
+            }
         }
     }
 
@@ -157,7 +159,10 @@ export default class DuelField extends React.Component{
     forceRound =(round)=>{
         setTimeout(()=>{
             if(round == this.state.round){
-                socket.emit('HEADER_SAYS_START_ROUND',this.state._id);
+                if(round == 5)
+                    socket.emit('HEADER_SAYS_MATCH_IS_FINISHED',this.state._id);
+                else
+                    socket.emit('HEADER_SAYS_START_ROUND',this.state._id);
             }
         },15000);
     }
