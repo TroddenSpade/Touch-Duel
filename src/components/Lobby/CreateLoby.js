@@ -39,7 +39,7 @@ export default class CreateLobby extends React.Component{
             </Text>}
             {this.state.players.map((item,id)=>(
                     <View key={id}>
-                        <Text>{item}</Text>
+                        <Text>player{id}: {item}</Text>
                     </View>
                 )
             )}
